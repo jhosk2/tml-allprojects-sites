@@ -13,11 +13,21 @@ HINSTANCE hInst;								// 현재 인스턴스입니다.
 TCHAR szTitle[MAX_LOADSTRING];					// 제목 표시줄 텍스트입니다.
 TCHAR szWindowClass[MAX_LOADSTRING];			// 기본 창 클래스 이름입니다.
 
+string IP("127.0.0.1");
+string Port("3370");
+
+WSADATA wsaData;
+SOCKET hSocket;
+char socmessage[1024] = "Test Echo!";
+char revbmessage[1024] = "";
+int strLen;
+
 // 이 코드 모듈에 들어 있는 함수의 정방향 선언입니다.
 ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
+void CharToWChar( const char* pstrSrc, wchar_t pwstrDest[] );
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
@@ -117,7 +127,32 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }
 
-   netframework.testecho(hWnd);
+   SOCKADDR_IN servAddr;
+
+   if(WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) /* Load Winsock 2.2 DLL */
+   {
+	   MessageBox(hWnd, L"WSAStartup() error!", L"에러", MB_OK);
+	   return FALSE; 
+   }
+
+   hSocket=socket(PF_INET, SOCK_STREAM, 0);   
+   if(hSocket == INVALID_SOCKET)
+   {	
+	   MessageBox(hWnd, L"socket() error!", L"에러", MB_OK);
+	   return FALSE;
+   } 
+
+   memset(&servAddr, 0, sizeof(servAddr));
+   servAddr.sin_family=AF_INET;
+   servAddr.sin_addr.s_addr=inet_addr(IP.c_str());
+   servAddr.sin_port=htons(atoi(Port.c_str()));
+
+   if(connect(hSocket, (SOCKADDR*)&servAddr, sizeof(servAddr))==SOCKET_ERROR)
+   {	
+	   MessageBox(hWnd, L"connect() error!", L"에러", MB_OK); 
+	   return FALSE;
+   }
+
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
@@ -139,9 +174,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	int wmId, wmEvent;
 	PAINTSTRUCT ps;
 	HDC hdc;
+	wchar_t* recvme = new wchar_t[1024];
 
 	switch (message)
 	{
+	case WM_LBUTTONDOWN:
+		send(hSocket, socmessage, strlen(socmessage), 0); /* 메시지 전송 */
+		strLen=recv(hSocket, revbmessage, 1024-1, 0); /* 메시지 수신 */
+		revbmessage[strLen]=0;
+		CharToWChar(revbmessage, recvme);
+		MessageBox(hWnd, recvme, L"연결", MB_OK); 
+		break;
 	case WM_COMMAND:
 		wmId    = LOWORD(wParam);
 		wmEvent = HIWORD(wParam);
@@ -164,6 +207,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:
+		closesocket(hSocket);
+		WSACleanup();
 		PostQuitMessage(0);
 		break;
 	default:
@@ -190,4 +235,11 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	return (INT_PTR)FALSE;
+}
+
+
+void CharToWChar( const char* pstrSrc, wchar_t pwstrDest[] )
+{
+	int nLen = ( int )strlen( pstrSrc ) + 1;
+	mbstowcs( pwstrDest, pstrSrc, nLen );
 }
