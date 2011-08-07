@@ -13,9 +13,6 @@ HINSTANCE hInst;								// 현재 인스턴스입니다.
 TCHAR szTitle[MAX_LOADSTRING];					// 제목 표시줄 텍스트입니다.
 TCHAR szWindowClass[MAX_LOADSTRING];			// 기본 창 클래스 이름입니다.
 
-string IP("127.0.0.1");
-string Port("3370");
-
 WSADATA wsaData;
 SOCKET hSocket;
 char socmessage[1024] = "Test Echo!";
@@ -144,13 +141,13 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    memset(&servAddr, 0, sizeof(servAddr));
    servAddr.sin_family=AF_INET;
-   servAddr.sin_addr.s_addr=inet_addr(IP.c_str());
-   servAddr.sin_port=htons(atoi(Port.c_str()));
+   servAddr.sin_addr.s_addr=inet_addr("127.0.0.1");
+   servAddr.sin_port=htons(3370);
 
    if(connect(hSocket, (SOCKADDR*)&servAddr, sizeof(servAddr))==SOCKET_ERROR)
-   {	
-	   MessageBox(hWnd, L"connect() error!", L"에러", MB_OK); 
-	   return FALSE;
+   {
+		MessageBox(hWnd, L"connect() error!", L"에러", MB_OK); 
+		return FALSE;
    }
 
    ShowWindow(hWnd, nCmdShow);
