@@ -9,7 +9,7 @@
 #define BUFSIZE 1024
 void ErrorHandling(char* message);
 
-int _tmain(int argc, char** argv)
+int _tmain(int argc, _TCHAR* argv[]) 
 {
 	WSADATA wsaData;
 	SOCKET	hServSock;
@@ -23,7 +23,7 @@ int _tmain(int argc, char** argv)
 
 	if(argc!=2)
 	{
-		printf("Usage : %s <port>\n",argv[0]);
+		printf("Usage : %s <IP> <port>\n",argv[0]);
 		exit(1);
 	}
 
@@ -38,7 +38,7 @@ int _tmain(int argc, char** argv)
 	memset(&servAddr,0,sizeof(servAddr));
 	servAddr.sin_family = AF_INET;
 	servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	servAddr.sin_port = htons(atoi(argv[1]));
+	servAddr.sin_port = htons(_ttoi(argv[1]));
 
 	if(bind(hServSock, (SOCKADDR*) &servAddr , sizeof(servAddr)) == SOCKET_ERROR)
 		ErrorHandling("bind() error");
