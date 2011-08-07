@@ -9,13 +9,7 @@
 #define BUFSIZE 1024
 void ErrorHandling(char* message);
 
-/*
-int _tmain(int argc, _TCHAR* argv[])
-{
-	return 0;
-}*/
-
-int main(int argc, char** argv)
+int _tmain(int argc, char** argv)
 {
 	WSADATA wsaData;
 	SOCKET	hServSock;
@@ -58,7 +52,7 @@ int main(int argc, char** argv)
 		ErrorHandling("accept() error");
 
 	while( (strLen = recv(hClntSock , message , BUFSIZE , 0)) != 0)
-	//{
+	{
 		send(hClntSock,message,strLen,0);
 	}
 
