@@ -235,6 +235,18 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="NetFramework"
+			>
+			<File
+				RelativePath=".\NetFramework.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\NetFramework.h"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"
 			>
