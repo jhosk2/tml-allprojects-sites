@@ -15,16 +15,18 @@ TCHAR szWindowClass[MAX_LOADSTRING];			// 기본 창 클래스 이름입니다.
 
 WSADATA wsaData;
 SOCKET hSocket;
-char socmessage[1024] = "Test Echo!";
-char revbmessage[1024] = "";
+char recvmessage[1024] = "";
 int strLen;
+HWND htbxClientID = NULL;
+HWND htbxMessage = NULL;
 
 // 이 코드 모듈에 들어 있는 함수의 정방향 선언입니다.
 ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
-void CharToWChar( const char* pstrSrc, wchar_t pwstrDest[] );
+wchar_t* ConverCtoWC(char* str);
+char * ConvertWCtoC(wchar_t* str);
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
@@ -171,16 +173,33 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	int wmId, wmEvent;
 	PAINTSTRUCT ps;
 	HDC hdc;
-	wchar_t* recvme = new wchar_t[1024];
+
+	wchar_t socmessage[1024];
+	wchar_t ID[2];
+	string t;
 
 	switch (message)
 	{
+	case WM_CREATE:
+		htbxClientID = CreateWindow(L"edit", L"", WS_VISIBLE|WS_CHILD|WS_BORDER|ES_AUTOHSCROLL|ES_AUTOVSCROLL,
+			10, 10, 50, 30, hWnd, NULL, hInst, NULL);
+		htbxMessage = CreateWindow(L"edit", L"", WS_VISIBLE|WS_CHILD|WS_BORDER|ES_AUTOHSCROLL|ES_AUTOVSCROLL,
+			10, 50, 300, 30, hWnd, NULL, hInst, NULL);
+		break;
 	case WM_LBUTTONDOWN:
-		send(hSocket, socmessage, strlen(socmessage), 0); /* 메시지 전송 */
-		strLen=recv(hSocket, revbmessage, 1024-1, 0); /* 메시지 수신 */
-		revbmessage[strLen]=0;
-		CharToWChar(revbmessage, recvme);
-		MessageBox(hWnd, recvme, L"연결", MB_OK); 
+		GetWindowText(htbxClientID,ID,128);
+		GetWindowText(htbxMessage,socmessage,128);
+		t = ConvertWCtoC(ID);
+		t = t + ",";
+		t = t + ConvertWCtoC(socmessage);
+
+		if(strlen(ConvertWCtoC(socmessage)) < 1)
+			break;
+		send(hSocket, t.c_str(), t.length(), 0); /* 메시지 전송 */
+		strLen=recv(hSocket, recvmessage, 1024-1, 0); /* 메시지 수신 */
+		recvmessage[strLen]=0;
+
+		MessageBox(hWnd, ConverCtoWC(recvmessage), L"연결", MB_OK); 
 		break;
 	case WM_COMMAND:
 		wmId    = LOWORD(wParam);
@@ -234,9 +253,32 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	return (INT_PTR)FALSE;
 }
 
-
-void CharToWChar( const char* pstrSrc, wchar_t pwstrDest[] )
+char * ConvertWCtoC(wchar_t* str)
 {
-	int nLen = ( int )strlen( pstrSrc ) + 1;
-	mbstowcs( pwstrDest, pstrSrc, nLen );
+	//반환할 char* 변수 선언
+	char* pStr ; 
+
+	//입력받은 wchar_t 변수의 길이를 구함
+	int strSize = WideCharToMultiByte(CP_ACP, 0,str,-1, NULL, 0,NULL, NULL);
+	//char* 메모리 할당
+	pStr = new char[strSize];
+
+	//형 변환 
+	WideCharToMultiByte(CP_ACP, 0, str, -1, pStr, strSize, 0,0);
+	return pStr;
+}
+
+///////////////////////////////////////////////////////////////////////
+//char 에서 wchar_t 로의 형변환 함수
+wchar_t* ConverCtoWC(char* str)
+{
+	//wchar_t형 변수 선언
+	wchar_t* pStr;
+	//멀티 바이트 크기 계산 길이 반환
+	int strSize = MultiByteToWideChar(CP_ACP, 0,str, -1, NULL, NULL);
+	//wchar_t 메모리 할당
+	pStr = new WCHAR[strSize];
+	//형 변환
+	MultiByteToWideChar(CP_ACP, 0,str, strlen(str)+1, pStr, strSize);
+	return pStr;
 }
