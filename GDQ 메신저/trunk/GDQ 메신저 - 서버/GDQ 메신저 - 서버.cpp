@@ -43,7 +43,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	memset(&servAddr, 0, sizeof(servAddr));
 	servAddr.sin_family=AF_INET;
 	servAddr.sin_addr.s_addr=inet_addr(IP.c_str());
-	servAddr.sin_port=htons(atoi(Port.c_str()));
+	servAddr.sin_port =htons(atoi(Port.c_str()));
 
 	if(bind(hServSock, (SOCKADDR*) &servAddr , sizeof(servAddr)) == SOCKET_ERROR)
 		ErrorHandling("bind() error");
@@ -53,7 +53,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	clntAddrSize = sizeof(clntAddr);
 	hClntSock = accept(hServSock, (SOCKADDR*)&clntAddr, &clntAddrSize);
-	if(hClntSock = INVALID_SOCKET)
+
+	if(hClntSock == INVALID_SOCKET)
 		ErrorHandling("accept() error");
 
 	while( (strLen = recv(hClntSock , message , BUFSIZE , 0)) != 0)
