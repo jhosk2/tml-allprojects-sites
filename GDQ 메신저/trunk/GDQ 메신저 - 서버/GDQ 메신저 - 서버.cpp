@@ -26,18 +26,18 @@ int _tmain(int argc, _TCHAR* argv[])
 	SOCKADDR_IN clntAddr;
 	int clntAddrSize;
 
-	if(argc!=2)
+	/*if(argc!=2)
 	{
 		printf("Usage : %s <IP> <port>\n",argv[0]);
 		exit(1);
-	}
+	}*/
 
 	if(WSAStartup(MAKEWORD(2,2) , &wsaData) != 0)
 		ErrorHandling("WSAStartup() error!");
 
 	hServSock = socket(PF_INET , SOCK_STREAM , 0);
 
-	if(hServSock = INVALID_SOCKET)
+	if(hServSock == INVALID_SOCKET)
 		ErrorHandling("socket() error");
 	
 	memset(&servAddr, 0, sizeof(servAddr));
