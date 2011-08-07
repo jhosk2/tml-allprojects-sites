@@ -1,16 +1,21 @@
 // GDQ 메신저 - 서버.cpp : 콘솔 응용 프로그램에 대한 진입점을 정의합니다.
 //
 
+
+
 #include "stdafx.h"
-#include <stdlib.h>
-#include <string.h>
-#include <winsock2.h>
+
+
 
 #define BUFSIZE 1024
 void ErrorHandling(char* message);
 
 int _tmain(int argc, _TCHAR* argv[]) 
 {
+	string IP("127.0.0.1");
+	string Port("3370");
+
+
 	WSADATA wsaData;
 	SOCKET	hServSock;
 	SOCKET	hClntSock;
@@ -34,11 +39,11 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	if(hServSock = INVALID_SOCKET)
 		ErrorHandling("socket() error");
-
-	memset(&servAddr,0,sizeof(servAddr));
-	servAddr.sin_family = AF_INET;
-	servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	servAddr.sin_port = htons(_ttoi(argv[1]));
+	
+	memset(&servAddr, 0, sizeof(servAddr));
+	servAddr.sin_family=AF_INET;
+	servAddr.sin_addr.s_addr=inet_addr(IP.c_str());
+	servAddr.sin_port=htons(atoi(Port.c_str()));
 
 	if(bind(hServSock, (SOCKADDR*) &servAddr , sizeof(servAddr)) == SOCKET_ERROR)
 		ErrorHandling("bind() error");
