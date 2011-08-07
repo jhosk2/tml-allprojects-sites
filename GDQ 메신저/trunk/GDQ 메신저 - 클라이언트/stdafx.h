@@ -4,6 +4,7 @@
 //
 
 #pragma once
+#pragma comment( lib , "ws2_32")
 
 #include "targetver.h"
 
@@ -19,3 +20,12 @@
 
 
 // TODO: 프로그램에 필요한 추가 헤더는 여기에서 참조합니다.
+
+#include <cstdio>
+#include <iostream>
+#include <cstdlib>
+#include <locale>
+#include <string>
+#include <WinSock2.h>
+
+using std::string;
