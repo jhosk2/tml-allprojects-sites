@@ -27,6 +27,10 @@
 #include <locale>
 #include <string>
 #include <WinSock2.h>
+#include <process.h>
+#include <windef.h>
+//#include <pthread.h>
+
 
 using std::string;
 
