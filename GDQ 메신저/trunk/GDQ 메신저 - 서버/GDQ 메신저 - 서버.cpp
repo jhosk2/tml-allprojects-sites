@@ -113,7 +113,9 @@ DWORD32 WINAPI ClientConn(void* arg)
 	SOCKET	clntSock	= (SOCKET)arg;
 	int		strLen		= 0;
 	char	message[BUFSIZE];
-
+	
+	memset(message,NULL,BUFSIZE);
+	
 
 	while( (strLen = recv(clntSock , message , BUFSIZE , 0)) != 0)
 	{
