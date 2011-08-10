@@ -7,8 +7,15 @@
 
 
 
-#define BUFSIZE 1024
+#define BUFSIZE 100
+
 void ErrorHandling(char* message);
+DWORD32 WINAPI ClientConn(void* arg);
+void SendMSG(char* message, int len);
+
+int clntNumber = 0;
+SOCKET clntSocks[10];
+HANDLE hMutex;
 
 int _tmain(int argc, _TCHAR* argv[]) 
 {
@@ -26,6 +33,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	SOCKADDR_IN clntAddr;
 	int clntAddrSize;
 
+	HANDLE hThread;
+	DWORD	dwThreadID;
+
 	/*if(argc!=2)
 	{
 		printf("Usage : %s <IP> <port>\n",argv[0]);
@@ -34,6 +44,12 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	if(WSAStartup(MAKEWORD(2,2) , &wsaData) != 0)
 		ErrorHandling("WSAStartup() error!");
+
+	hMutex = CreateMutex(NULL,FALSE,NULL);
+	if(hMutex == NULL)
+	{
+		ErrorHandling("CreateMutex() error");
+	}
 
 	hServSock = socket(PF_INET , SOCK_STREAM , 0);
 
@@ -51,18 +67,34 @@ int _tmain(int argc, _TCHAR* argv[])
 	if(listen(hServSock,5) == SOCKET_ERROR)
 		ErrorHandling("listen() error");
 
-	clntAddrSize = sizeof(clntAddr);
-	hClntSock = accept(hServSock, (SOCKADDR*)&clntAddr, &clntAddrSize);
-
-	if(hClntSock == INVALID_SOCKET)
-		ErrorHandling("accept() error");
-
-	while( (strLen = recv(hClntSock , message , BUFSIZE , 0)) != 0)
+	while(1)
 	{
-		send(hClntSock,message,strLen,0);
+		clntAddrSize = sizeof(clntAddr);
+		hClntSock = accept(hServSock, (SOCKADDR*)&clntAddr, &clntAddrSize);
+
+		if(hClntSock == INVALID_SOCKET)
+			ErrorHandling("accept() error");
+
+		WaitForSingleObject(hMutex,INFINITE);
+		clntSocks[clntNumber++] = hClntSock;
+		ReleaseMutex(hMutex);
+
+		printf("새 연결 , 클라이언트 IP : %s \n",inet_ntoa(clntAddr.sin_addr));
+
+		hThread = (HANDLE)_beginthreadex(NULL,0,ClientConn,(void*)hClntSock,0,(unsigned*)&dwThreadID);
+
+		if(hThread == 0)
+		{
+			ErrorHandling("Thread Create Error");
+		}
 	}
 
+	/*
+	
+
 	closesocket(hClntSock);
+	*/
+	
 	WSACleanup();
 
 	return 0;
@@ -75,3 +107,83 @@ void ErrorHandling(char* message)
 	fputc('\n',stderr);
 	exit(1);
 }
+
+DWORD32 WINAPI ClientConn(void* arg)
+{
+	SOCKET	clntSock	= (SOCKET)arg;
+	int		strLen		= 0;
+	char	message[BUFSIZE];
+
+
+	while( (strLen = recv(clntSock , message , BUFSIZE , 0)) != 0)
+	{
+		//SendMSG(message,strLen);
+		WaitForSingleObject(hMutex,INFINITE);
+
+		for(int i = 0 ; i < clntNumber ; i++)
+		{
+			if(clntSock != clntSocks[i])
+			{
+				char* ptemp = strchr(message,',');
+				int nPos = ptemp - message -1;
+				char* ptemp2;
+
+				strncpy(ptemp2,message,nPos);
+
+				// b = message에서 걸러낸 아이디
+				int nRecvID = atoi(ptemp2);
+
+				// temp3 = message에서 걸러낸 보낸 내용
+				char* pRecvMessage = &message[nPos+2];
+
+				send(clntSocks[i],pRecvMessage,strlen(pRecvMessage),0);
+				
+				break;
+			}
+
+		}
+
+		ReleaseMutex(hMutex);
+	}
+
+	WaitForSingleObject(hMutex,INFINITE);
+
+	for(int i = 0 ; i < clntNumber ; i++)
+	{
+		if(clntSock == clntSocks[i])
+		{
+			for(;i<clntNumber-1;i++)
+			{
+				clntSocks[i] = clntSocks[i+1];
+			}
+			break;
+		}
+	}
+	clntNumber --;
+	ReleaseMutex(hMutex);
+
+	closesocket(clntSock);
+
+	return 0;
+
+}
+
+void SendMSG(char* message, int len)
+{
+	WaitForSingleObject(hMutex,INFINITE);
+	
+	for(int i = 0 ; i < clntNumber ; i++)
+	{
+		send(clntSocks[i],message,len,0);
+		
+	}
+	
+	ReleaseMutex(hMutex);
+
+}
+
+/*
+
+
+
+		*/
