@@ -122,8 +122,9 @@ DWORD32 WINAPI ClientConn(void* arg)
 
 		for(int i = 0 ; i < clntNumber ; i++)
 		{
+			/*
 			if(clntSock != clntSocks[i])
-			{
+			{*/
 				char* ptemp = strchr(message,',');
 				int nPos = ptemp - message -1;
 				char* ptemp2;
@@ -139,7 +140,7 @@ DWORD32 WINAPI ClientConn(void* arg)
 				send(clntSocks[i],pRecvMessage,strlen(pRecvMessage),0);
 				
 				break;
-			}
+			//}
 
 		}
 
