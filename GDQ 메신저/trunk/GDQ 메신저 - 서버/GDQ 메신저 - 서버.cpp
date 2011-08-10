@@ -126,8 +126,10 @@ DWORD32 WINAPI ClientConn(void* arg)
 			if(clntSock != clntSocks[i])
 			{*/
 				char* ptemp = strchr(message,',');
-				int nPos = ptemp - message -1;
-				char* ptemp2;
+				int nPos = strlen(message) - strlen(ptemp);
+				char ptemp2[100];
+
+				
 
 				strncpy(ptemp2,message,nPos);
 
@@ -135,7 +137,7 @@ DWORD32 WINAPI ClientConn(void* arg)
 				int nRecvID = atoi(ptemp2);
 
 				// temp3 = message에서 걸러낸 보낸 내용
-				char* pRecvMessage = &message[nPos+2];
+				char* pRecvMessage = &message[nPos+1];
 
 				send(clntSocks[i],pRecvMessage,strlen(pRecvMessage),0);
 				
