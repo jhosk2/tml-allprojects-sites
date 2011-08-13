@@ -17,6 +17,9 @@ int clntNumber = 0;
 SOCKET clntSocks[10];
 HANDLE hMutex;
 
+map<int,SOCKET> mClntSock;
+int		nCount = 0;
+
 int _tmain(int argc, _TCHAR* argv[]) 
 {
 	string IP("127.0.0.1");
@@ -26,6 +29,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	WSADATA wsaData;
 	SOCKET	hServSock;
 	SOCKET	hClntSock;
+	
 	char	message[BUFSIZE];
 	int strLen;
 
@@ -76,7 +80,12 @@ int _tmain(int argc, _TCHAR* argv[])
 			ErrorHandling("accept() error");
 
 		WaitForSingleObject(hMutex,INFINITE);
-		clntSocks[clntNumber++] = hClntSock;
+		//clntSocks[clntNumber++] = hClntSock;
+		
+		mClntSock[clntNumber] = hClntSock;
+		
+		clntNumber ++;
+
 		ReleaseMutex(hMutex);
 
 		printf("새 연결 , 클라이언트 IP : %s \n",inet_ntoa(clntAddr.sin_addr));
@@ -122,16 +131,15 @@ DWORD32 WINAPI ClientConn(void* arg)
 		//SendMSG(message,strLen);
 		WaitForSingleObject(hMutex,INFINITE);
 
+		/*
 		for(int i = 0 ; i < clntNumber ; i++)
 		{
 			/*
 			if(clntSock != clntSocks[i])
-			{*/
+			{
 				char* ptemp = strchr(message,',');
 				int nPos = strlen(message) - strlen(ptemp);
-				char ptemp2[100];
-
-				
+				char ptemp2[100];				
 
 				strncpy(ptemp2,message,nPos);
 
@@ -147,24 +155,50 @@ DWORD32 WINAPI ClientConn(void* arg)
 			//}
 
 		}
+		*/
+		char* ptemp = strchr(message,',');
+		int nPos = strlen(message) - strlen(ptemp);
+		char ptemp2[100];				
+
+		strncpy(ptemp2,message,nPos);
+
+		// b = message에서 걸러낸 아이디
+		int nRecvID = atoi(ptemp2);
+
+		// temp3 = message에서 걸러낸 보낸 내용
+		char* pRecvMessage = &message[nPos+1];
+
+		
+		for(ItorIntSockMap itor = mClntSock.begin()
+			; itor != mClntSock.end()
+			; ++itor)
+		{
+			if(clntSock != itor->second)
+			{
+				send(itor->second,pRecvMessage,strlen(pRecvMessage),0);
+				
+				break;
+			}
+		}
+		
 
 		ReleaseMutex(hMutex);
 	}
 
 	WaitForSingleObject(hMutex,INFINITE);
 
-	for(int i = 0 ; i < clntNumber ; i++)
+	
+	for(ItorIntSockMap itor = mClntSock.begin()
+			; itor != mClntSock.end()
+			; ++itor)
 	{
-		if(clntSock == clntSocks[i])
+		if(clntSock == itor->second)
 		{
-			for(;i<clntNumber-1;i++)
-			{
-				clntSocks[i] = clntSocks[i+1];
-			}
-			break;
+			mClntSock.erase(itor);
 		}
 	}
-	clntNumber --;
+	
+	
 	ReleaseMutex(hMutex);
 
 	closesocket(clntSock);
@@ -187,8 +221,3 @@ void SendMSG(char* message, int len)
 
 }
 
-/*
-
-
-
-		*/
