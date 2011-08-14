@@ -30,8 +30,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	SOCKET	hServSock;
 	SOCKET	hClntSock;
 	
-	char	message[BUFSIZE];
-	int strLen;
+	
+	
 
 	SOCKADDR_IN servAddr;
 	SOCKADDR_IN clntAddr;
