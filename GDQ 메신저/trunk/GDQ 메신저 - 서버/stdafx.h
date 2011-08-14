@@ -29,10 +29,15 @@
 #include <WinSock2.h>
 #include <process.h>
 #include <windef.h>
-//#include <pthread.h>
+#include <map>
+#include <vector>
 
 
 using std::string;
+using std::map;
+
+typedef map<int,SOCKET>::iterator ItorIntSockMap;
+
 
 
 
