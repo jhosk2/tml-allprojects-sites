@@ -36,7 +36,7 @@
 using std::string;
 using std::map;
 
-typedef map<int,SOCKET>::iterator ItorIntSockMap;
+typedef map<string,SOCKET>::iterator ItorIntSockMap;
 
 
 
