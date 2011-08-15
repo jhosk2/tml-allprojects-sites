@@ -17,7 +17,8 @@ int clntNumber = 0;
 SOCKET clntSocks[10];
 HANDLE hMutex;
 
-map<int,SOCKET> mClntSock;
+//map<int,SOCKET> mClntSock;
+map<string,SOCKET> mClntSock;
 int		nCount = 0;
 
 int _tmain(int argc, _TCHAR* argv[]) 
@@ -29,8 +30,6 @@ int _tmain(int argc, _TCHAR* argv[])
 	WSADATA wsaData;
 	SOCKET	hServSock;
 	SOCKET	hClntSock;
-	
-	
 	
 
 	SOCKADDR_IN servAddr;
@@ -82,9 +81,9 @@ int _tmain(int argc, _TCHAR* argv[])
 		WaitForSingleObject(hMutex,INFINITE);
 		//clntSocks[clntNumber++] = hClntSock;
 		
-		mClntSock[clntNumber] = hClntSock;
+		//mClntSock[clntNumber] = hClntSock;
 		
-		clntNumber ++;
+		//clntNumber ++;
 
 		ReleaseMutex(hMutex);
 
@@ -122,40 +121,48 @@ DWORD32 WINAPI ClientConn(void* arg)
 	SOCKET	clntSock	= (SOCKET)arg;
 	int		strLen		= 0;
 	char	message[BUFSIZE];
+	string ID;
+	
 	
 	memset(message,NULL,BUFSIZE);
+
+	//첨에 메세지 받음
+	strLen = recv(clntSock , message , BUFSIZE , 0);
+
+	// 메세지 형변환 
+	ID = message;
+
+	unsigned int a = mClntSock[ID];
+
+	if(mClntSock[ID] != NULL) // 중복 체크 
+	{
+		// 중복이면 Fail 메세지 보내고 소켓 종료
+		memset(message,NULL,BUFSIZE);
+		strcpy(message,"Fail");
+
+		send(clntSock,message,strlen(message),0);
+
+		closesocket(clntSock);
+
+		return 0;
+	}
+
+	//걍 나오면 중복 아님
 	
+	// 아이디 추가
+	mClntSock[ID] = clntSock;
+	
+	// 메세지 OK 메세지 보냄 
+	memset(message,NULL,BUFSIZE);
+	strcpy(message,"OK");
+
+	send(clntSock,message,strlen(message),0);
 
 	while( (strLen = recv(clntSock , message , BUFSIZE , 0)) != 0)
 	{
-		//SendMSG(message,strLen);
+		
 		WaitForSingleObject(hMutex,INFINITE);
 
-		/*
-		for(int i = 0 ; i < clntNumber ; i++)
-		{
-			/*
-			if(clntSock != clntSocks[i])
-			{
-				char* ptemp = strchr(message,',');
-				int nPos = strlen(message) - strlen(ptemp);
-				char ptemp2[100];				
-
-				strncpy(ptemp2,message,nPos);
-
-				// b = message에서 걸러낸 아이디
-				int nRecvID = atoi(ptemp2);
-
-				// temp3 = message에서 걸러낸 보낸 내용
-				char* pRecvMessage = &message[nPos+1];
-
-				send(clntSocks[i],pRecvMessage,strlen(pRecvMessage),0);
-				
-				break;
-			//}
-
-		}
-		*/
 		char* ptemp = strchr(message,',');
 		int nPos = strlen(message) - strlen(ptemp);
 		char ptemp2[100];				
@@ -163,24 +170,13 @@ DWORD32 WINAPI ClientConn(void* arg)
 		strncpy(ptemp2,message,nPos);
 
 		// b = message에서 걸러낸 아이디
-		int nRecvID = atoi(ptemp2);
+		string nRecvID = ptemp2;
 
 		// temp3 = message에서 걸러낸 보낸 내용
 		char* pRecvMessage = &message[nPos+1];
 
-		
-		for(ItorIntSockMap itor = mClntSock.begin()
-			; itor != mClntSock.end()
-			; ++itor)
-		{
-			if(clntSock != itor->second)
-			{
-				send(itor->second,pRecvMessage,strlen(pRecvMessage),0);
-				
-				break;
-			}
-		}
-		
+		if(mClntSock[nRecvID])
+			send(mClntSock[nRecvID],pRecvMessage,strlen(pRecvMessage),0);		
 
 		ReleaseMutex(hMutex);
 	}
@@ -195,6 +191,7 @@ DWORD32 WINAPI ClientConn(void* arg)
 		if(clntSock == itor->second)
 		{
 			mClntSock.erase(itor);
+			break;
 		}
 	}
 	
