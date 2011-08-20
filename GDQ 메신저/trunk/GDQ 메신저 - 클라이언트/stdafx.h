@@ -27,5 +27,8 @@
 #include <locale>
 #include <string>
 #include <WinSock2.h>
+#include <atltypes.h>
+#include <list>
 
 using std::string;
+using std::list;
