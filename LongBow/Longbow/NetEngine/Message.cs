@@ -4,156 +4,115 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Reflection;
 
 namespace NetEngine
 {
-	class Message
+	public class Message
 	{
 
-		void GetMsgID(out UInt32 MsgID)
+		public void GetMsgID(out UInt32 MsgID)
 		{
 			MsgID = this.MsgID;
 		}
 
-		void GetTargetID(out UInt32 TargetID)
+		public void GetTargetID(out UInt32 TargetID)
 		{
 			TargetID = this.TargetID;
 		}
 
-		void Read(out Object Output)
+		public void Write(Object value)
 		{
-			switch (Type.GetTypeCode(Output.GetType()))
+
+			if (ContentStream.Position != ContentStream.Length)
 			{
-				default:
-					/* 아래 것들은 지원 안함.
-					case TypeCode.Empty:
-						break;
-					case TypeCode.DBNull:
-						break;
-					case TypeCode.Decimal:
-						break;
-					 */
-					SerializedContent = null;
-					break;
-				case TypeCode.Boolean:
-					ContentStream.Write(
-					Output = BitConverter.ToBoolean(SerializedContent, 0);
-					break;
-				case TypeCode.Char:
-					Output = BitConverter.ToChar(SerializedContent, 0);
-					break;
-				//case TypeCode.SByte:
-					//Output = BitConverter.ToSByte(SerializedContent, 0);
-					//break;
-				//case TypeCode.Byte:
-					//Output = BitConverter.ToByte(SerializedContent, 0);
-					//break;
-				case TypeCode.Int16:
-					Output = BitConverter.ToInt16(SerializedContent, 0);
-					break;
-				case TypeCode.UInt16:
-					Output = BitConverter.ToUInt16(SerializedContent, 0);
-					break;
-				case TypeCode.Int32:
-					Output = BitConverter.ToInt32(SerializedContent, 0);
-					break;
-				case TypeCode.UInt32:
-					Output = BitConverter.ToUInt32(SerializedContent, 0);
-					break;
-				case TypeCode.Int64:
-					Output = BitConverter.ToInt64(SerializedContent, 0);
-					break;
-				case TypeCode.UInt64:
-					Output = BitConverter.ToUInt64(SerializedContent, 0);
-					break;
-				case TypeCode.Single:
-					Output = BitConverter.ToSingle(SerializedContent, 0);
-					break;
-				case TypeCode.Double:
-					Output = BitConverter.ToDouble(SerializedContent, 0);
-					break;
-				case TypeCode.DateTime:
-					Output = DateTime.FromBinary(BitConverter.ToInt64(SerializedContent, 0));
-					break;
-				case TypeCode.String:
-					Int32 StringLength;
-					StringLength = BitConverter.ToInt32(SerializedContent, 0);
-					Output = Encoding.UTF8.GetString(SerializedContent, 0, StringLength);
-					break;
+				throw new InvalidOperationException("한번 읽기 시작한 스트림은 다시 쓸 수 없다!");
 			}
 
+			Type type = value.GetType();
+
+			BinaryWriter bw = new BinaryWriter(ContentStream);
+
+			MethodInfo method = typeof(BinaryWriter).GetMethod("Write", new Type[] { type });
+
+			if (method == null) throw new NotSupportedException();
+
+			method.Invoke(bw, new object[] { value });
+
+			bw.Flush();
 		}
 
-		void Write(Object Content)
+
+		public void Read(out String Output)
 		{
-			Byte[] SerializedContent;
-
-			switch(Type.GetTypeCode(Content.GetType()))
-			{
-				default:
-					/* 아래 것들은 지원 안함.
-					case TypeCode.Empty:
-						break;
-					case TypeCode.DBNull:
-						break;
-					case TypeCode.Decimal:
-						break;
-					 */
-					SerializedContent = null;
-					break;
-				case TypeCode.Boolean:
-					SerializedContent = BitConverter.GetBytes((Boolean)Content);
-					break;
-				case TypeCode.Char:
-					SerializedContent = BitConverter.GetBytes((Char)Content);
-					break;
-				case TypeCode.SByte:
-					SerializedContent = BitConverter.GetBytes((SByte)Content);
-					break;
-				case TypeCode.Byte:
-					SerializedContent = BitConverter.GetBytes((Byte)Content);
-					break;
-				case TypeCode.Int16:
-					SerializedContent = BitConverter.GetBytes((Int16)Content);
-					break;
-				case TypeCode.UInt16:
-					SerializedContent = BitConverter.GetBytes((UInt16)Content);
-					break;
-				case TypeCode.Int32:
-					SerializedContent = BitConverter.GetBytes((Int32)Content);
-					break;
-				case TypeCode.UInt32:
-					SerializedContent = BitConverter.GetBytes((UInt32)Content);
-					break;
-				case TypeCode.Int64:
-					SerializedContent = BitConverter.GetBytes((Int64)Content);
-					break;
-				case TypeCode.UInt64:
-					SerializedContent = BitConverter.GetBytes((UInt64)Content);
-					break;
-				case TypeCode.Single:
-					SerializedContent = BitConverter.GetBytes((Single)Content);
-					break;
-				case TypeCode.Double:
-					SerializedContent = BitConverter.GetBytes((Double)Content);
-					break;
-				case TypeCode.DateTime:
-					SerializedContent = BitConverter.GetBytes(((DateTime)Content).ToBinary());
-					break;
-				case TypeCode.String:
-					Byte[] StringLength = BitConverter.GetBytes(((String)Content).Length);
-					ContentStream.Write(StringLength, (int)ContentStream.Length, StringLength.Length);
-					SerializedContent = Encoding.UTF8.GetBytes((String)Content);
-					break;
-			}
-
-			if (SerializedContent != null)
-			{
-				ContentStream.Read(SerializedContent, (int)ContentStream.Length, SerializedContent.Length);
-			}
+			BinaryReader br = new BinaryReader(ContentStream);
+			Output = br.ReadString();
 		}
 		
-		private Stream ContentStream = new MemoryStream();
+		public void Read<T>(out T Output)
+		{
+			T temp = default(T);
+			
+			Object Param;
+
+			BinaryReader br = new BinaryReader(ContentStream);
+
+			if (ContentStream.Position == ContentStream.Length)
+			{
+				ContentStream.Position = 0;
+			}
+
+			switch( Type.GetTypeCode(temp.GetType()))
+			{
+				default:
+					Param = null;
+					break;
+				case TypeCode.Boolean:
+					Param = br.ReadBoolean();
+					break;
+				case TypeCode.Byte:
+					Param = br.ReadByte();
+					break;
+				case TypeCode.Char:
+					Param = br.ReadChar();
+					break;
+				case TypeCode.Decimal:
+					Param = br.ReadDecimal();
+					break;
+				case TypeCode.Double:
+					Param = br.ReadDouble();
+					break;
+				case TypeCode.Int16:
+					Param = br.ReadInt16();
+					break;
+				case TypeCode.Int32:
+					Param = br.ReadInt32();
+					break;
+				case TypeCode.Int64:
+					Param = br.ReadInt64();
+					break;
+				case TypeCode.UInt16:
+					Param = br.ReadUInt16();
+					break;
+				case TypeCode.UInt32:
+					Param = br.ReadUInt32();
+					break;
+				case TypeCode.UInt64:
+					Param = br.ReadUInt64();
+					break;
+				case TypeCode.SByte:
+					Param = br.ReadSByte();
+					break;
+				case TypeCode.Single:
+					Param = br.ReadSingle();
+					break;
+			}
+			
+			Output = (T)Param;
+		}
+
+		private MemoryStream ContentStream = new MemoryStream();
 		private UInt32 MsgID = 0;
 		private UInt32 TargetID = 0;
 

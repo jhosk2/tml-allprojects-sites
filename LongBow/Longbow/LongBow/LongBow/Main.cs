@@ -36,17 +36,7 @@ namespace LongBow
 		protected override void Initialize()
 		{
 			// TODO: Add your initialization logic here
-			Message Msg = new Message();
-			Int32 i = 123;
-			Int32 i2;
-			String text = "Text";
-			String text2;
-
-			Msg.Write(i);
-			Msg.Write(text);
-			Msg.Read<Int32>(out i2);
-			Msg.Read<String>(out text2);
-
+			
 			base.Initialize();
 		}
 
