@@ -12,19 +12,28 @@ namespace NetEngine
 	public class Message
 	{
 
-		public void GetMsgID(out UInt32 MsgID)
+		public UInt32 GetMsgID()
 		{
-			MsgID = this.MsgID;
+			return MsgID;
 		}
 
-		public void GetTargetID(out UInt32 TargetID)
+		public UInt32 GetTargetID()
 		{
-			TargetID = this.TargetID;
+			return TargetID;
+		}
+
+		public void SetMsgID(UInt32 MsgID)
+		{
+			this.MsgID = MsgID;
+		}
+
+		public void SetTargetID(UInt32 TargetID)
+		{
+			this.TargetID = TargetID;
 		}
 
 		public void Write(Object value)
 		{
-
 			if (ContentStream.Position != ContentStream.Length)
 			{
 				throw new InvalidOperationException("한번 읽기 시작한 스트림은 다시 쓸 수 없다!");
@@ -107,8 +116,7 @@ namespace NetEngine
 				case TypeCode.Single:
 					Param = br.ReadSingle();
 					break;
-			}
-			
+			}			
 			Output = (T)Param;
 		}
 

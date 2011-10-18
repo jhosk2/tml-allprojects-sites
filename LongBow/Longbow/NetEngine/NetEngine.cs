@@ -9,7 +9,6 @@ namespace NetEngine
 {
     public class NetEngine                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
     {
-
         void ThreadProc()
         {
             Message Msg;
@@ -20,7 +19,7 @@ namespace NetEngine
 
                 if (Msg != null)
                 {
-                    ;
+					DelegateDic[Msg.GetMsgID()].DynamicInvoke(Msg);
                 }
             }
         }
@@ -43,7 +42,8 @@ namespace NetEngine
         }
 
 
-        private Queue<Message>  MsgQueue        = new Queue<Message>();
-        private List<Socket>    SocketList      = new List<Socket>();
+        private Queue<Message>					MsgQueue        = new Queue<Message>();
+		private Dictionary<UInt32, Delegate>	DelegateDic		= new Dictionary<UInt32, Delegate>();
+        private List<Socket>					SocketList      = new List<Socket>();
     }
 }
