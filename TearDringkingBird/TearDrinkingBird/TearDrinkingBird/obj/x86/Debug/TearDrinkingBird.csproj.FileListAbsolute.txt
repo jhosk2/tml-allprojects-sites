@@ -1,0 +1,6 @@
+c:\users\roiseg64\documents\visual studio 2010\Projects\TearDrinkingBird\TearDrinkingBird\TearDrinkingBird\bin\x86\Debug\TearDrinkingBird.exe
+c:\users\roiseg64\documents\visual studio 2010\Projects\TearDrinkingBird\TearDrinkingBird\TearDrinkingBird\bin\x86\Debug\TearDrinkingBird.pdb
+c:\users\roiseg64\documents\visual studio 2010\Projects\TearDrinkingBird\TearDrinkingBird\TearDrinkingBird\obj\x86\Debug\ResolveAssemblyReference.cache
+c:\users\roiseg64\documents\visual studio 2010\Projects\TearDrinkingBird\TearDrinkingBird\TearDrinkingBird\obj\x86\Debug\Microsoft.Xna.Framework.RuntimeProfile.txt
+c:\users\roiseg64\documents\visual studio 2010\Projects\TearDrinkingBird\TearDrinkingBird\TearDrinkingBird\obj\x86\Debug\TearDrinkingBird.exe
+c:\users\roiseg64\documents\visual studio 2010\Projects\TearDrinkingBird\TearDrinkingBird\TearDrinkingBird\obj\x86\Debug\TearDrinkingBird.pdb
