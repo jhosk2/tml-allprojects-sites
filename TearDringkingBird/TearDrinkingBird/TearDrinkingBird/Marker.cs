@@ -20,20 +20,18 @@ namespace TearDrinkingBird
 
         public MarkerType Type
         {
-            public get { return Type; }
+            get { return Type; }
             private set { Type = value; }
         }
 
         private Texture2D   Texture;
-        private Vector2     Position = new Vector2();
+        private Vector2     Position;
+        private Boolean     SkillCooldown;
 
-        private Timer       SkillTimer;
-        private Boolean     SkillCooldown = false;
-
-        public UInt32 MarkerPlaceID
+        public UInt16 MarkerPlaceID
         {
-            public get { return MarkerPlaceID; }
-            public set
+            get { return MarkerPlaceID; }
+            set
             {
                 if (value < 0)
                 {
@@ -48,14 +46,7 @@ namespace TearDrinkingBird
         {
             // MarkerPlaceID를 이용해 MarkerPlace의 x, y좌표를 읽어 vec에 저장
         }
-
-        private void SkillTimerCallback(object state)
-        {
-            Monitor.Enter(SkillCooldown);
-            SkillCooldown = true;
-            Monitor.Exit(SkillCooldown);
-        }
-
+        
         public Boolean SkillUse()
         {
             if (SkillCooldown)
@@ -75,14 +66,23 @@ namespace TearDrinkingBird
                     break;
             }
 
+            SkillCooldown = true;
+
             return true;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Type"></param>
+        /// <param name="Texture"> 250 x 500 pixel png format </param>
+        /// <param name="SkillCoolTime"></param>
         public void Initialize( MarkerType Type, Texture2D Texture, long SkillCoolTime )
         {
+            SkillCooldown   = false;
             this.Type       = Type;
-            SkillTimer      = new Timer( SkillTimerCallback, null, SkillCoolTime, Timeout.Infinite );
             this.Texture    = Texture;
+            Position        = new Vector2();
         }
 
         public void Update()
