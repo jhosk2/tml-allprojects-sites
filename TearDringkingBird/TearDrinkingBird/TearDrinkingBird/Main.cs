@@ -41,6 +41,7 @@ namespace TearDrinkingBird
             gameSession = new GameSession();
             gameSession.Initialize(GameSession.TurnState.eTS_P1);
             Camera.Initialize();
+            Camera.WorldRect = new Rectangle( 0, 0, 1000, 1000 );
 
             base.Initialize();
         }
