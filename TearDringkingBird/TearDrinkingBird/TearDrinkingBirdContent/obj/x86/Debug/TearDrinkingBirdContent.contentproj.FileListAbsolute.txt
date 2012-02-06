@@ -1,1 +1,0 @@
-c:\users\roiseg64\documents\visual studio 2010\Projects\TearDrinkingBird\TearDrinkingBird\TearDrinkingBirdContent\obj\x86\Debug\ResolveAssemblyReference.cache

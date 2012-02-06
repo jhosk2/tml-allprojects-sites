@@ -18,6 +18,9 @@ namespace TearDrinkingBird
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        GameSession gameSession;
+
+        Texture2D board;
 
         public Main()
         {
@@ -35,6 +38,10 @@ namespace TearDrinkingBird
         {
             // TODO: Add your initialization logic here
             
+            gameSession = new GameSession();
+            gameSession.Initialize(GameSession.TurnState.eTS_P1);
+            Camera.Initialize();
+
             base.Initialize();
         }
 
@@ -46,7 +53,10 @@ namespace TearDrinkingBird
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
+            
             // TODO: use this.Content to load your game content here
+
+            board = this.Content.Load<Texture2D>("Board");
         }
 
         /// <summary>
@@ -71,6 +81,9 @@ namespace TearDrinkingBird
 
             // TODO: Add your update logic here
 
+            gameSession.Update();
+            Camera.Update();
+
             base.Update(gameTime);
         }
 
@@ -81,9 +94,21 @@ namespace TearDrinkingBird
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
+            
+            spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, null, null, null, null, Camera.TransformMatrix());
 
-            // TODO: Add your drawing code here
+            //Draw your game here
+            gameSession.Draw();
+            spriteBatch.Draw(board, Vector2.Zero, Color.White);
 
+            spriteBatch.End();
+            
+            spriteBatch.Begin();
+
+            //Draw your HUD here
+
+            spriteBatch.End();
+            
             base.Draw(gameTime);
         }
     }
