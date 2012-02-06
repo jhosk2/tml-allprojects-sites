@@ -18,11 +18,7 @@ namespace TearDrinkingBird
             eMT_Ingan
         }
 
-        public MarkerType Type
-        {
-            get { return Type; }
-            private set { Type = value; }
-        }
+        private MarkerType Type;
 
         private Texture2D   Texture;
         private Vector2     Position;
@@ -77,11 +73,10 @@ namespace TearDrinkingBird
         /// <param name="Type"></param>
         /// <param name="Texture"> 250 x 500 pixel png format </param>
         /// <param name="SkillCoolTime"></param>
-        public void Initialize( MarkerType Type, Texture2D Texture, long SkillCoolTime )
+        public void Initialize( MarkerType Type, long SkillCoolTime )
         {
             SkillCooldown   = false;
             this.Type       = Type;
-            this.Texture    = Texture;
             Position        = new Vector2();
         }
 
@@ -94,5 +89,6 @@ namespace TearDrinkingBird
         {
             spriteBatch.Draw(Texture, Position, null, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
         }
+
     }
 }

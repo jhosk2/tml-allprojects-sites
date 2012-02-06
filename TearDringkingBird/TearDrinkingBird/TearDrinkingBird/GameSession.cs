@@ -30,59 +30,100 @@ namespace TearDrinkingBird
 			eGS_TurnEnd
 		}
 
-		private TurnState turnState;
+        private TurnState NowTurn;
+		private TurnState PlayerTurn;
 		private GameState gameState;
-		
+
+        private Marker[] Markers;	
 
 		# region Private Functions
 
 		private void TurnStart()
 		{
+            gameState = GameState.eGS_WaitingYutThrow;
 		}
 				
 		private void WaitingYutThrow()
 		{
+            gameState = GameState.eGS_YutThrown;
 		}
 				
 		private void YutThrown()
-		{
+        {
+            gameState = GameState.eGS_YutFell;
 		}
 
 		private void YutFell()
-		{
+        {
+            gameState = GameState.eGS_BeforeMoveMarker;
 		}
 				
 		private void BeforeMoveMarker()
-		{
+        {
+            gameState = GameState.eGS_MovingMarker;
 		}
 				
 		private void MovingMarker()
-		{
+        {
+            gameState = GameState.eGS_AfterMoveMarker;
 		}
 
 		private void AfterMoveMarker()
-		{
+        {
+            gameState = GameState.eGS_BeforeTurnEnd;
 		}
 
 		private void BeforeTurnEnd()
-		{
+        {
+            gameState = GameState.eGS_TurnEnd;
 		}
 		
 		private void TurnEnd()
-		{
+        {
+            gameState = GameState.eGS_TurnStart;
+
+            switch (NowTurn)
+            {
+                case TurnState.eTS_P1:
+                    NowTurn = TurnState.eTS_P2;
+                    break;
+                case TurnState.eTS_P2:
+                    NowTurn = TurnState.eTS_P3;
+                    break;
+                case TurnState.eTS_P3:
+                    NowTurn = TurnState.eTS_P4;
+                    break;
+                case TurnState.eTS_P4:
+                    NowTurn = TurnState.eTS_P1;
+                    break;
+            }
 		}
 
 		# endregion
 
 		# region XNA Calling Function
 
-		public void Initialize()
+		public void Initialize( TurnState PlayerTurn )
 		{
-			turnState = TurnState.eTS_P1;
-			gameState = GameState.eGS_TurnStart;
+            this.PlayerTurn = PlayerTurn;
+            NowTurn         = TurnState.eTS_P1;
+			gameState       = GameState.eGS_TurnStart;
+
+            Markers         = new Marker[16];
+            for( int i = 0; i < 4; i+=4 )
+            {
+                Markers[i] = new Marker();
+                Markers[i].Initialize(Marker.MarkerType.eMT_Doggabi, 3);
+                Markers[i + 1] = new Marker();
+                Markers[i + 1].Initialize(Marker.MarkerType.eMT_Ingan, 3);
+                Markers[i + 2] = new Marker();
+                Markers[i + 2].Initialize(Marker.MarkerType.eMT_Lecon, 3);
+                Markers[i + 3] = new Marker();
+                Markers[i + 3].Initialize(Marker.MarkerType.eMT_Naga, 3);
+            }
 		}
 
-		public void Draw()
+        public void Draw()
 		{
 			switch ( gameState )
 			{
@@ -111,6 +152,11 @@ namespace TearDrinkingBird
 		{
 			if ( Mouse.GetState().LeftButton == ButtonState.Pressed )
 			{
+                if ( NowTurn != PlayerTurn )
+                {
+                    return;
+                }
+
 				switch ( gameState )
 				{
 					case GameState.eGS_TurnStart:
