@@ -40,6 +40,7 @@ namespace TearDrinkingBird
             
             gameSession = new GameSession();
             gameSession.Initialize(GameSession.TurnState.eTS_P1);
+
             Camera.Initialize();
             Camera.WorldRect = new Rectangle( 0, 0, 1000, 1000 );
 
@@ -100,7 +101,6 @@ namespace TearDrinkingBird
 
             //Draw your game here
             gameSession.Draw();
-            spriteBatch.Draw(board, Vector2.Zero, Color.White);
 
             spriteBatch.End();
             
